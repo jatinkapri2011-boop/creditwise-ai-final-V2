@@ -597,6 +597,24 @@ NAV_OPTIONS = [
     "Overview", "Applicant Screening", "What-If Lab", "Portfolio Intelligence", "AI Copilot", "Project Guide"
 ]
 st.markdown("<div class='nav-shell'>", unsafe_allow_html=True)
+DEMO_VALUES = {
+    "Demo — Strong profile": {
+        "age": 34, "annual_income": 1500000, "employment_years": 8, "loan_amount": 2500000,
+        "loan_term_months": 60, "credit_score": 790, "debt_to_income": 22.0, "existing_loans": 1,
+        "missed_payments_12m": 0, "savings_balance": 700000, "employment_type": "Salaried", "housing_status": "Owned", "dependents": 1
+    },
+    "Demo — Borderline profile": {
+        "age": 31, "annual_income": 1000000, "employment_years": 4, "loan_amount": 2500000,
+        "loan_term_months": 60, "credit_score": 670, "debt_to_income": 34.0, "existing_loans": 1,
+        "missed_payments_12m": 0, "savings_balance": 250000, "employment_type": "Salaried", "housing_status": "Rented", "dependents": 2
+    },
+    "Demo — High-risk profile": {
+        "age": 28, "annual_income": 550000, "employment_years": 2, "loan_amount": 3500000,
+        "loan_term_months": 48, "credit_score": 545, "debt_to_income": 58.0, "existing_loans": 4,
+        "missed_payments_12m": 4, "savings_balance": 50000, "employment_type": "Self-employed", "housing_status": "Rented", "dependents": 3
+    },
+}
+
 page = st.radio(
     "Navigate through the CreditWise workflow",
     NAV_OPTIONS,
@@ -761,26 +779,9 @@ elif page == "Applicant Screening":
     st.markdown("<div class='section-kicker'>Decision workspace</div><div class='section-title'>Applicant Screening</div>", unsafe_allow_html=True)
     st.markdown("<div class='section-subtitle'>Enter a synthetic profile to see the model score, rule-based guardrails, recommended workflow and explanation.</div>", unsafe_allow_html=True)
 
-    demo_names = ["Custom input", "Demo — Strong profile", "Demo — Borderline profile", "Demo — High-risk profile"]
-    demo_values = {
-        "Demo — Strong profile": {
-            "age": 34, "annual_income": 1500000, "employment_years": 8, "loan_amount": 2500000,
-            "loan_term_months": 60, "credit_score": 790, "debt_to_income": 22.0, "existing_loans": 1,
-            "missed_payments_12m": 0, "savings_balance": 700000, "employment_type": "Salaried", "housing_status": "Owned", "dependents": 1
-        },
-        "Demo — Borderline profile": {
-            "age": 31, "annual_income": 1000000, "employment_years": 4, "loan_amount": 2500000,
-            "loan_term_months": 60, "credit_score": 670, "debt_to_income": 34.0, "existing_loans": 1,
-            "missed_payments_12m": 0, "savings_balance": 250000, "employment_type": "Salaried", "housing_status": "Rented", "dependents": 2
-        },
-        "Demo — High-risk profile": {
-            "age": 28, "annual_income": 550000, "employment_years": 2, "loan_amount": 3500000,
-            "loan_term_months": 48, "credit_score": 545, "debt_to_income": 58.0, "existing_loans": 4,
-            "missed_payments_12m": 4, "savings_balance": 50000, "employment_type": "Self-employed", "housing_status": "Rented", "dependents": 3
-        },
-    }
+    demo_names = ["Custom input", *DEMO_VALUES.keys()]
     demo = st.selectbox("Quick demo profile", demo_names, help="Use a pre-built profile for a fast classroom demonstration.")
-    v = demo_values.get(demo, {})
+    v = DEMO_VALUES.get(demo, {})
 
     with st.form("screen_form"):
         st.markdown("**Applicant profile**")
@@ -896,7 +897,7 @@ elif page == "What-If Lab":
 
     base = st.session_state.get("last_applicant")
     if base is None:
-        base = demo_values.get("Demo — Strong profile", {
+        base = DEMO_VALUES.get("Demo — Strong profile", {
             "age": 34, "annual_income": 1500000, "employment_years": 8, "loan_amount": 2500000,
             "loan_term_months": 60, "credit_score": 790, "debt_to_income": 22.0, "existing_loans": 1,
             "missed_payments_12m": 0, "savings_balance": 700000, "employment_type": "Salaried", "housing_status": "Owned", "dependents": 1
