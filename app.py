@@ -171,13 +171,19 @@ st.markdown(
     .section-subtitle { color:#64748b; margin-bottom: .95rem; }
 
     .info-card {
-        background: #ffffff;
+        background: #ffffff !important;
+        color: #0f172a !important;
         border: 1px solid var(--cw-border);
         border-radius: 16px;
         padding: 1rem 1.05rem;
         box-shadow: 0 7px 18px rgba(15, 23, 42, 0.045);
         height: 100%;
     }
+    .info-card * { color: #0f172a !important; }
+    .info-card .small-note, .info-card .muted { color: #64748b !important; }
+    .info-card h3, .info-card h4 { color: #0f172a !important; }
+    .copilot-user-card { background:#f8fafc !important; color:#0f172a !important; }
+    .copilot-ai-card { background:#ffffff !important; color:#0f172a !important; border-left:4px solid #2563eb !important; }
     .info-card h4 { margin: 0 0 .35rem; color:#0f172a; }
     .info-card p { margin:0; color:#64748b; line-height:1.55; }
     .info-card .icon { font-size:1.25rem; margin-bottom:.35rem; }
@@ -518,6 +524,16 @@ Do not invent policies. If the question is outside scope, say so briefly and red
         except Exception:
             pass
     q = question.lower()
+    if "dti" in q or "debt-to-income" in q or "debt to income" in q:
+        return ("DTI, or debt-to-income ratio, compares an applicant's recurring debt obligations with income. A higher DTI means more of the applicant's income is already committed to debt, leaving less buffer for a new loan payment. In CreditWise AI, a high DTI can therefore reduce the model's estimated approval probability and trigger a transparent risk guardrail. It is a screening signal, not a final lending decision.", "Local copilot")
+    if "logistic" in q or "regression" in q:
+        return ("CreditWise AI uses logistic regression to estimate the probability that an application belongs to the approved class. The model combines applicant variables such as credit score, DTI, income, loan amount and repayment history. The probability is then paired with deterministic rule checks so the result is easier to explain.", "Local copilot")
+    if "rule" in q or "guardrail" in q:
+        return ("The rule layer is a transparent safety and explainability layer. It flags conditions such as high DTI, low credit score, multiple missed payments or a weak savings buffer. This does not override the ML model; it gives a human reviewer clear reasons for caution.", "Local copilot")
+    if "what-if" in q or "what if" in q or "simulator" in q:
+        return ("The What-If Simulator lets you change financial inputs such as credit score, DTI, income, loan amount, missed payments and savings. CreditWise AI recalculates the estimated approval probability so you can demonstrate model sensitivity under different applicant scenarios.", "Local copilot")
+    if "roc" in q or "auc" in q:
+        return ("ROC-AUC measures how well the model separates approved and non-approved cases across different probability thresholds. A value of 0.5 is roughly chance performance, while 1.0 represents perfect separation. This prototype's holdout ROC-AUC is about 0.781, but the result is based on synthetic classroom data.", "Local copilot")
     if "score" in q or "probability" in q:
         return ("CreditWise combines the applicant inputs in a logistic-regression model and reports an estimated approval probability. The app then applies transparent rule checks such as high DTI, low credit score, or multiple recent missed payments. The score supports screening; it does not replace formal underwriting.", "Local copilot")
     if "gemini" in q or "api" in q:
@@ -1053,9 +1069,9 @@ elif page == "AI Copilot":
         st.markdown("**Conversation**")
         for role, msg in st.session_state["copilot_history"]:
             if role == "user":
-                st.markdown(f"<div class='info-card' style='margin:.45rem 0'><div class='small-note'>YOU</div><div style='font-weight:700'>{msg}</div></div>", unsafe_allow_html=True)
+                st.markdown(f"<div class='info-card copilot-user-card' style='margin:.45rem 0'><div class='small-note'>YOU</div><div style='font-weight:700;color:#0f172a !important'>{msg}</div></div>", unsafe_allow_html=True)
             else:
-                st.markdown(f"<div class='info-card' style='margin:.45rem 0;border-left:4px solid #2563eb'><div class='small-note'>CREDITWISE AI</div><div>{msg}</div></div>", unsafe_allow_html=True)
+                st.markdown(f"<div class='info-card copilot-ai-card' style='margin:.45rem 0'><div class='small-note'>CREDITWISE AI</div><div style='color:#0f172a !important;line-height:1.65'>{msg}</div></div>", unsafe_allow_html=True)
         if st.button("Clear conversation", key="clear_copilot"):
             st.session_state["copilot_history"] = []
             st.rerun()
