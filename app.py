@@ -1007,38 +1007,60 @@ elif page == "AI Copilot":
     st.markdown("<div class='section-kicker'>Generative AI layer</div><div class='section-title'>AI Copilot</div>", unsafe_allow_html=True)
     st.markdown("<div class='section-subtitle'>Ask questions about the screening logic, model interpretation, portfolio metrics, What-If Lab or project architecture.</div>", unsafe_allow_html=True)
 
-    c1, c2, c3 = st.columns(3)
-    prompt_cards = [
-        ("Explain the score", "Why does DTI matter in the screening score?"),
-        ("Explain the model", "What is logistic regression doing here?"),
-        ("Explain the project", "Why is Gemini not allowed to make the credit decision?"),
-    ]
-    for col, (title, prompt) in zip([c1,c2,c3], prompt_cards):
-        with col:
-            st.markdown(f"<div class='info-card'><div class='small-note'>{title}</div><div style='font-weight:700;color:#0f172a;margin:.25rem 0 .45rem'>{prompt}</div></div>", unsafe_allow_html=True)
+    st.info("💡 Choose a suggested question or type your own question below. The Copilot is an educational explanation layer; it does not make final lending decisions.")
 
     if "copilot_history" not in st.session_state:
         st.session_state["copilot_history"] = []
+
     context = {
         "last_probability": st.session_state.get("last_probability"),
         "last_flags": st.session_state.get("last_flags"),
         "model_accuracy": round(metrics["accuracy"], 3),
         "model_roc_auc": round(metrics["roc_auc"], 3),
     }
-    for role, msg in st.session_state["copilot_history"]:
-        with st.chat_message(role):
-            st.write(msg)
 
-    question = st.chat_input("Ask a project question…")
+    suggested = [
+        ("📊 Why does DTI matter?", "Why does a high debt-to-income ratio increase credit risk?"),
+        ("🤖 Explain logistic regression", "What is logistic regression doing in this project?"),
+        ("🎯 Explain the score", "How should I interpret the approval probability?"),
+        ("🛡️ Explain the rule layer", "Why does the application use rule-based guardrails in addition to the ML model?"),
+        ("🧪 Explain What-If", "How does the What-If Simulator work?"),
+        ("⚠️ Explain limitations", "What are the main limitations of this credit-risk prototype?"),
+    ]
+
+    st.markdown("**Try a question**")
+    cols = st.columns(3)
+    selected_prompt = None
+    for i, (label, prompt) in enumerate(suggested):
+        with cols[i % 3]:
+            if st.button(label, key=f"copilot_suggest_{i}", use_container_width=True):
+                selected_prompt = prompt
+
+    typed_question = st.text_input(
+        "Your question",
+        placeholder="e.g. What does ROC-AUC mean in this project?",
+        key="copilot_text_input",
+    )
+    ask_typed = st.button("▶ Ask CreditWise AI", type="primary", use_container_width=True)
+    question = selected_prompt if selected_prompt else (typed_question.strip() if ask_typed and typed_question.strip() else None)
+
     if question:
-        with st.chat_message("user"):
-            st.write(question)
         answer, source = copilot_response(question, json.dumps(context))
-        with st.chat_message("assistant"):
-            st.write(answer)
-            st.caption(f"Response source: {source}")
         st.session_state["copilot_history"].append(("user", question))
         st.session_state["copilot_history"].append(("assistant", answer))
+
+    if st.session_state["copilot_history"]:
+        st.markdown("**Conversation**")
+        for role, msg in st.session_state["copilot_history"]:
+            if role == "user":
+                st.markdown(f"<div class='info-card' style='margin:.45rem 0'><div class='small-note'>YOU</div><div style='font-weight:700'>{msg}</div></div>", unsafe_allow_html=True)
+            else:
+                st.markdown(f"<div class='info-card' style='margin:.45rem 0;border-left:4px solid #2563eb'><div class='small-note'>CREDITWISE AI</div><div>{msg}</div></div>", unsafe_allow_html=True)
+        if st.button("Clear conversation", key="clear_copilot"):
+            st.session_state["copilot_history"] = []
+            st.rerun()
+    else:
+        st.markdown("<div class='info-card'><div class='small-note'>READY</div><h3 style='margin:.25rem 0'>Your AI Copilot is ready.</h3><div class='muted'>Click any suggested question above or type a finance/project question and press <b>Ask CreditWise AI</b>.</div></div>", unsafe_allow_html=True)
 
     with st.expander("Recommended viva questions"):
         st.write("• Why did you choose logistic regression?  • What does ROC-AUC mean?  • Why use a separate rule layer?  • Why is Gemini optional?  • What are the limitations of synthetic data?  • How would you productionise this system?")
